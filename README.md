@@ -20,7 +20,11 @@ Before you use, following tasks must be completed.
 ```
 FPATH=path/to/prism/src:$FPATH
 autoload -Uz prism
-add-zsh-hook preexec prism
+function prism-preexec() { prism --preexec $* }
+function prism-precmd() { prism --precmd }
+add-zsh-hook preexec prism-preexec
+add-zsh-hook precmd  prism-precmd
+
 ```
 
 ### Register
@@ -32,6 +36,11 @@ Before you use, you must register your project for target of observation
 ### Un-register
 
 1. In your repository, run `prism -d` for un-register your repository
+
+### Note
+
+This plugin wants to use variable `ZSH_PLUGIN_PRISM_COMMIT_FLAG` for checking of commit status.
+Please do not make conflicts.
 
 ## License
 
