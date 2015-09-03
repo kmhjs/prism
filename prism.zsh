@@ -19,6 +19,16 @@ function _prism_validate_environment()
     return 0
 }
 
+function _prism_write_update()
+{
+    (
+        cd ${ZSH_PLUGIN_PRISM_HUB_REPOSITORY}
+        md5sum <(date +%s) | cut -d ' ' -f 1 1> ./log
+        git add ./log 1>/dev/null
+        git commit -m '[Observer] -> User updated private repository' 1>/dev/null
+    )
+}
+
 function _prism_core()
 {
     local sub_cmd
@@ -33,12 +43,7 @@ function _prism_core()
         return 255
     }
 
-    (
-        cd ${ZSH_PLUGIN_PRISM_HUB_REPOSITORY}
-        md5sum <(date +%s) | cut -d ' ' -f 1 1> ./log
-        git add ./log 1>/dev/null
-        git commit -m '[Observer] -> User updated private repository' 1>/dev/null
-    )
+    _prism_write_update
 }
 
 _prism_core $*
