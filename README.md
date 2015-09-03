@@ -9,12 +9,19 @@ It works like prism (glass).
 
 Before you use, following tasks must be completed.
 
-1. Make hub repository named `prism_hub` in Github
-2. Initialize hub repository with empty file named `log`
-3. Create directory named `.prism` in your home directory
-4. Clone your Github project `prism_hub` in `.prism`
-5. Add one-line `export ZSH_PLUGIN_PRISM_HUB_REPOSITORY=${HOME}/.prism/prism_hub` into your `.zshenv`
-6. Add hook in your `.zshrc` <Write>
+1. Specify your favorite directory for storing prism task files as `export ZSH_PLUGIN_PRISM_PATH=${HOME}/.prism` in your `.zshenv`
+2. Specify yoru favorite log store repository as `export ZSH_PLUGIN_PRISM_HUB_REPOSITORY=prism_hub` in your `.zshenv`
+3. Create directory `ZSH_PLUGIN_PRISM_PATH`
+4. Make hub repository `ZSH_PLUGIN_PRISM_HUB_REPOSITORY` in Github, and clone it into `ZSH_PLUGIN_PRISM_PATH` (or do it manually)
+5. Initialize hub repository with empty file named `log`
+6. Add one-line `export ZSH_PLUGIN_PRISM_HUB_REPOSITORY=${HOME}/.prism/prism_hub` into your `.zshenv`
+7. Add hook in your `.zshrc` as follows
+
+```
+FPATH=path/to/prism/src:$FPATH
+autoload -Uz prism
+add-zsh-hook preexec prism
+```
 
 ### Register
 
