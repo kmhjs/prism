@@ -38,9 +38,12 @@ function _prism_write_update()
         return 255
     }
 
+    local last_log
+    last_log=$(git log --oneline)
+
     (
         cd ${ZSH_PLUGIN_PRISM_PATH}/${ZSH_PLUGIN_PRISM_HUB_REPOSITORY}
-        md5sum <(date +%s) | cut -d ' ' -f 1 1> ./log
+        md5sum <(echo $last_log) | cut -d ' ' -f 1 1> ./log
         git add ./log 1>/dev/null
         git commit -m '[Observer] -> User updated private repository' 1>/dev/null
     )
@@ -80,10 +83,10 @@ function _prism_find_repository_root()
 
 function _prism_register()
 {
-    echo "prism_register"
-
     local repo_root
     repo_root="$(_prism_find_repository_root)"
+
+    echo "[INFO] Registered repository ${repo_root}"
 
     sort -u <(cat ${ZSH_PLUGIN_PRISM_PATH}/config; echo ${repo_root}) > /tmp/repo_stat
     cat /tmp/repo_stat > ${ZSH_PLUGIN_PRISM_PATH}/config
@@ -92,10 +95,10 @@ function _prism_register()
 
 function _prism_unregister()
 {
-    echo "prism_unregister"
-
     local repo_root
     repo_root="$(_prism_find_repository_root)"
+
+    echo "[INFO] Unregistered repository ${repo_root}"
 
     sort <(cat ${ZSH_PLUGIN_PRISM_PATH}/config; echo ${repo_root}) | uniq -u > /tmp/repo_stat
     cat /tmp/repo_stat > ${ZSH_PLUGIN_PRISM_PATH}/config
@@ -116,6 +119,22 @@ function _prism_is_registered()
     return 0
 }
 
+function _prism_preexec()
+{
+    local sub_cmd
+    sub_cmd=$(echo $1 | xargs | cut -d ' ' -f 1,2)
+
+    [[ "${sub_cmd}" == "git commit" ]] && ZSH_PLUGIN_PRISM_COMMIT_FLAG=1
+}
+
+function _prism_precmd()
+{
+    [[ ${ZSH_PLUGIN_PRISM_COMMIT_FLAG} == 1 ]] && {
+        ZSH_PLUGIN_PRISM_COMMIT_FLAG=0
+        _prism_write_update
+    }
+}
+
 function _prism_core()
 {
     _prism_in_repository
@@ -128,23 +147,29 @@ function _prism_core()
 
     local main_cmd sub_cmd
 
-    main_cmd="$(echo $1 | xargs | cut -d ' ' -f 1)"
-    sub_cmd="$(echo $1 | xargs | cut -d ' ' -f 2)"
+    main_cmd=$1
+    sub_cmd=$2
 
-    [[ "${main_cmd}" == "git" || "${main_cmd}" == "prism" ]] || {
+    [[ "${main_cmd}" == "-a"          || \
+       "${main_cmd}" == "-d"          || \
+       "${main_cmd}" == "--preexec"   || \
+       "${main_cmd}" == "--precmd" ]] || {
         return 255
     }
 
-    [[ ${#sub_cmd} > 0 ]] || {
-        return 255
-    }
-
-    case ${sub_cmd} in
-        -a) _prism_register ;;
-        -d) _prism_unregister ;;
-        commit)  _prism_write_update ;;
+    case ${main_cmd} in
+        -a)       _prism_register ;   return 0 ;;
+        -d)       _prism_unregister ; return 0 ;;
+        --precmd) _prism_precmd ;     return 0 ;;
         *) ;;
     esac
+
+    [[ ${#sub_cmd} > 0 && "${main_cmd}" == "--preexec" ]] && {
+        _prism_preexec ${sub_cmd}
+        return 0
+    }
+
+    return 255
 }
 
 _prism_core $*
