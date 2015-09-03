@@ -11,6 +11,14 @@ Before you use, following tasks must be completed.
 
 1. Specify your favorite directory for storing prism task files as `export ZSH_PLUGIN_PRISM_PATH=${HOME}/.prism` in your `.zshenv`
 2. Specify yoru favorite log store repository as `export ZSH_PLUGIN_PRISM_HUB_REPOSITORY=prism_hub` in your `.zshenv`
+
+```
+# .zshenv (Example)
+
+export ZSH_PLUGIN_PRISM_PATH=${HOME}/.prism
+export ZSH_PLUGIN_PRISM_HUB_REPOSITORY=prism_hub
+```
+
 3. Create directory `ZSH_PLUGIN_PRISM_PATH`
 4. Make hub repository `ZSH_PLUGIN_PRISM_HUB_REPOSITORY` in Github, and clone it into `ZSH_PLUGIN_PRISM_PATH` (or do it manually)
 5. Initialize hub repository with empty file named `log`
@@ -18,6 +26,8 @@ Before you use, following tasks must be completed.
 7. Add hook in your `.zshrc` as follows
 
 ```
+# .zshrc
+
 FPATH=path/to/prism/src:$FPATH
 autoload -Uz prism
 function prism-preexec() { prism --preexec $* }
