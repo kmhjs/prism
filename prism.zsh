@@ -33,13 +33,11 @@ function _prism_core()
         return 255
     }
 
-    echo "commit task"
-
     (
         cd ${ZSH_PLUGIN_PRISM_HUB_REPOSITORY}
-        md5sum <(date +%s) | cut -d ' ' -f 1 > ./log
-        git add ./log
-        git commit -m '[Observer] -> User updated private repository'
+        md5sum <(date +%s) | cut -d ' ' -f 1 1> ./log
+        git add ./log 1>/dev/null
+        git commit -m '[Observer] -> User updated private repository' 1>/dev/null
     )
 }
 
