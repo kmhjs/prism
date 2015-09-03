@@ -65,6 +65,22 @@ function _prism_fetch()
     )
 }
 
+function _prism_clean()
+{
+    (
+        cd ${ZSH_PLUGIN_PRISM_PATH}
+
+        cat ./config | sort | uniq > /tmp/prism_list
+        : > ./config
+
+        cat /tmp/prism_list | while read l; do
+            [[ -e $l ]] && echo $l >> ./config
+        ; done
+
+        rm -rf /tmp/prism_list
+    )
+}
+
 function _prism_in_repository()
 {
     [[ -n "$(git branch 2>/dev/null)" ]] && {
@@ -170,6 +186,7 @@ function _prism_core()
        "${main_cmd}" == "-d"          || \
        "${main_cmd}" == "--push"      || \
        "${main_cmd}" == "--fetch"     || \
+       "${main_cmd}" == "--clean"     || \
        "${main_cmd}" == "--preexec"   || \
        "${main_cmd}" == "--precmd" ]] || {
         return 255
@@ -180,6 +197,7 @@ function _prism_core()
         -d)       _prism_unregister ; return 0 ;;
         --push)   _prism_push;        return 0 ;;
         --fetch)  _prism_fetch;       return 0 ;;
+        --clean)  _prism_clean;       return 0 ;;
         --precmd) _prism_precmd ;     return 0 ;;
         *) ;;
     esac
