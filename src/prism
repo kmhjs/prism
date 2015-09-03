@@ -57,6 +57,14 @@ function _prism_push()
     )
 }
 
+function _prism_fetch()
+{
+    (
+        cd ${ZSH_PLUGIN_PRISM_PATH}/${ZSH_PLUGIN_PRISM_HUB_REPOSITORY}
+        git pull origin master
+    )
+}
+
 function _prism_in_repository()
 {
     [[ -n "$(git branch 2>/dev/null)" ]] && {
@@ -161,6 +169,7 @@ function _prism_core()
     [[ "${main_cmd}" == "-a"          || \
        "${main_cmd}" == "-d"          || \
        "${main_cmd}" == "--push"      || \
+       "${main_cmd}" == "--fetch"     || \
        "${main_cmd}" == "--preexec"   || \
        "${main_cmd}" == "--precmd" ]] || {
         return 255
@@ -170,6 +179,7 @@ function _prism_core()
         -a)       _prism_register ;   return 0 ;;
         -d)       _prism_unregister ; return 0 ;;
         --push)   _prism_push;        return 0 ;;
+        --fetch)  _prism_fetch;       return 0 ;;
         --precmd) _prism_precmd ;     return 0 ;;
         *) ;;
     esac
