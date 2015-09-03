@@ -1,6 +1,6 @@
 # Prism
 
-Prism updates Github streak with your private repository at anywhere.
+Prism grows Github streak with your private repository commits.
 It works like prism (glass).
 
 ## Usage
@@ -10,7 +10,7 @@ It works like prism (glass).
 Before you use, following tasks must be completed.
 
 1. Specify your favorite directory for storing prism task files as `export ZSH_PLUGIN_PRISM_PATH=${HOME}/.prism` in your `.zshenv`
-2. Specify yoru favorite log store repository as `export ZSH_PLUGIN_PRISM_HUB_REPOSITORY=prism_hub` in your `.zshenv`
+2. Specify your favorite log store repository as `export ZSH_PLUGIN_PRISM_HUB_REPOSITORY=prism_hub` in your `.zshenv`
 
 ```
 # .zshenv (Example)
