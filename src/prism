@@ -31,8 +31,14 @@ function _prism_write_update()
 
 function _prism_core()
 {
-    local sub_cmd
+    local main_cmd sub_cmd
+
+    main_cmd="$(echo $1 | xargs | cut -d ' ' -f 1)"
     sub_cmd="$(echo $1 | xargs | cut -d ' ' -f 2)"
+
+    [[ "${main_cmd}" != "git" ]] && {
+        return 255
+    }
 
     [[ "${sub_cmd}" != "commit" ]] && {
         return 255
