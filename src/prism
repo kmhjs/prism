@@ -1,14 +1,26 @@
 function _prism_validate_environment()
 {
+    [[ ${#ZSH_PLUGIN_PRISM_PATH} > 0 ]] || {
+        return 255
+    }
+
     [[ ${#ZSH_PLUGIN_PRISM_HUB_REPOSITORY} > 0 ]] || {
         return 255
     }
 
-    [[ ! -e ${ZSH_PLUGIN_PRISM_HUB_REPOSITORY} ]] && {
+    [[ ! -e ${ZSH_PLUGIN_PRISM_PATH} ]] && {
         return 255
     }
 
-    [[ ! -e ${ZSH_PLUGIN_PRISM_HUB_REPOSITORY}/log ]] && {
+    [[ ! -e ${ZSH_PLUGIN_PRISM_PATH}/config ]] && {
+        return 255
+    }
+
+    [[ ! -e ${ZSH_PLUGIN_PRISM_PATH}/${ZSH_PLUGIN_PRISM_HUB_REPOSITORY} ]] && {
+        return 255
+    }
+
+    [[ ! -e ${ZSH_PLUGIN_PRISM_PATH}/${ZSH_PLUGIN_PRISM_HUB_REPOSITORY}/log ]] && {
         return 255
     }
 
@@ -21,35 +33,118 @@ function _prism_validate_environment()
 
 function _prism_write_update()
 {
+    _prism_is_registered
+    [[ $? == 255 ]] && {
+        return 255
+    }
+
     (
-        cd ${ZSH_PLUGIN_PRISM_HUB_REPOSITORY}
+        cd ${ZSH_PLUGIN_PRISM_PATH}/${ZSH_PLUGIN_PRISM_HUB_REPOSITORY}
         md5sum <(date +%s) | cut -d ' ' -f 1 1> ./log
         git add ./log 1>/dev/null
         git commit -m '[Observer] -> User updated private repository' 1>/dev/null
     )
 }
 
+function _prism_in_repository()
+{
+    [[ -n "$(git branch 2>/dev/null)" ]] && {
+        return 0
+    }
+
+    return 255
+}
+
+function _prism_find_repository_root()
+{
+    local repo_root tmp_str
+
+    repo_root="init";
+    tmp_str="";
+
+    while [[ -z "$tmp_str" ]]; do
+        [[ "${repo_root}" == "init" ]] && {
+            repo_root="./";
+        } || {
+            repo_root="${repo_root}../";
+        }
+
+        tmp_str="$(ls ${repo_root}.git 2> /dev/null)"
+    ; done
+
+    [[ -z "$repo_root" ]] && repo_root="."
+
+    repo_root="$(realpath $repo_root)"
+    echo $repo_root
+}
+
+function _prism_register()
+{
+    echo "prism_register"
+
+    local repo_root
+    repo_root="$(_prism_find_repository_root)"
+
+    sort -u <(cat ${ZSH_PLUGIN_PRISM_PATH}/config; echo ${repo_root}) > /tmp/repo_stat
+    cat /tmp/repo_stat > ${ZSH_PLUGIN_PRISM_PATH}/config
+    rm -f /tmp/repo_stat
+}
+
+function _prism_unregister()
+{
+    echo "prism_unregister"
+
+    local repo_root
+    repo_root="$(_prism_find_repository_root)"
+
+    sort <(cat ${ZSH_PLUGIN_PRISM_PATH}/config; echo ${repo_root}) | uniq -u > /tmp/repo_stat
+    cat /tmp/repo_stat > ${ZSH_PLUGIN_PRISM_PATH}/config
+    rm -f /tmp/repo_stat
+}
+
+function _prism_is_registered()
+{
+    local repo_root match
+
+    repo_root="$(_prism_find_repository_root)"
+
+    match=$(grep -e "${repo_root}" ${ZSH_PLUGIN_PRISM_PATH}/config)
+    [[ ${#match} > 0 ]] || {
+        return 255
+    }
+
+    return 0
+}
+
 function _prism_core()
 {
-    local main_cmd sub_cmd
-
-    main_cmd="$(echo $1 | xargs | cut -d ' ' -f 1)"
-    sub_cmd="$(echo $1 | xargs | cut -d ' ' -f 2)"
-
-    [[ "${main_cmd}" != "git" ]] && {
-        return 255
-    }
-
-    [[ "${sub_cmd}" != "commit" ]] && {
-        return 255
-    }
+    _prism_in_repository
+    [[ $? == 255 ]] && return 255
 
     _prism_validate_environment
     [[ $? == 255 ]] && {
         return 255
     }
 
-    _prism_write_update
+    local main_cmd sub_cmd
+
+    main_cmd="$(echo $1 | xargs | cut -d ' ' -f 1)"
+    sub_cmd="$(echo $1 | xargs | cut -d ' ' -f 2)"
+
+    [[ "${main_cmd}" == "git" || "${main_cmd}" == "prism" ]] || {
+        return 255
+    }
+
+    [[ ${#sub_cmd} > 0 ]] || {
+        return 255
+    }
+
+    case ${sub_cmd} in
+        -a) _prism_register ;;
+        -d) _prism_unregister ;;
+        commit)  _prism_write_update ;;
+        *) ;;
+    esac
 }
 
 _prism_core $*
