@@ -54,7 +54,7 @@ Please do not make conflicts.
 
 ## License
 
-<Write>
+See `LICENSE`.
 
 ## Contributions
 
