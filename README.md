@@ -47,6 +47,10 @@ Before you use, you must register your project for target of observation
 
 1. In your repository, run `prism -d` for un-register your repository
 
+### Update streak information in Github
+
+1. You must push repository information to Github. `prism --push`
+
 ### Note
 
 This plugin wants to use variable `ZSH_PLUGIN_PRISM_COMMIT_FLAG` for checking of commit status.
